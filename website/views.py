@@ -8,16 +8,22 @@ views = Blueprint('views', __name__)
 @views.route('/')
 @login_required
 def home():
-    posts = Memorie.query.all()
-    return render_template('home.html', posts=posts, user=current_user)
+    posts = Memorie.query.order_by(Memorie.date.desc()).all()
+    return render_template('index.html', user=current_user, posts=posts)
 
-@views.route('/post', methods=['POST'])
+@views.route('/add-post', methods=['POST'])
 @login_required
 def add_post():
-    content = request.form['content']
-    new_post = Memorie(data=content, user_id=current_user.id)
-    db.session.add(new_post)
-    db.session.commit()
+    content = request.form.get('content')
+
+    if not content:
+        flash('Post cannot be empty', category='error')
+    else:
+        new_post = Memorie(data=content, user_id=current_user.id)
+        db.session.add(new_post)
+        db.session.commit()
+        flash('Post added!', category='success')
+
     return redirect(url_for('views.home'))
 
 @views.route('/post/<int:post_id>/comment', methods=['POST'])
