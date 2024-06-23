@@ -1,3 +1,4 @@
+<!-- templates/index.html -->
 {% extends "base.html" %}
 
 {% block title %}
@@ -25,40 +26,6 @@
                     <footer class="blockquote-footer">
                         Posted by {{ post.user.user_name }} on {{ post.date.strftime('%Y-%m-%d') }}
                     </footer>
-
-                    <!-- Like Button -->
-                    <form method="POST" action="{{ url_for('views.like_post', post_id=post.id) }}" class="d-inline">
-                        <button type="submit" class="btn btn-link">
-                            {% if current_user.is_authenticated and post.likes|map(attribute='user_id')|list|contains(current_user.id) %}
-                                <i class="fas fa-heart text-danger"></i>
-                            {% else %}
-                                <i class="far fa-heart"></i>
-                            {% endif %}
-                            {{ post.likes|length }}
-                        </button>
-                    </form>
-
-                    <!-- Comments Section -->
-                    <hr>
-                    <h5>Comments</h5>
-                    {% for comment in post.comments %}
-                        <div class="card my-2">
-                            <div class="card-body">
-                                <p>{{ comment.content }}</p>
-                                <footer class="blockquote-footer">
-                                    Commented by {{ comment.user.user_name }} on {{ comment.date.strftime('%Y-%m-%d') }}
-                                </footer>
-                            </div>
-                        </div>
-                    {% endfor %}
-
-                    <!-- Add Comment -->
-                    <form method="POST" action="{{ url_for('views.add_comment', post_id=post.id) }}">
-                        <div class="form-group">
-                            <textarea name="content" class="form-control" rows="2" placeholder="Add a comment"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Comment</button>
-                    </form>
                 </div>
             </div>
         {% endfor %}
