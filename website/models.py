@@ -16,6 +16,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150))
     user_name = db.Column(db.String(150), unique=True)
     memories = db.relationship('Memorie', backref='user', lazy=True)
+    comments = db.relationship('Comment', backref='user', lazy=True)
+    likes = db.relationship('Like', backref='user', lazy=True)
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
