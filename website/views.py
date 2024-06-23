@@ -35,14 +35,22 @@ def add_comment(post_id):
     db.session.commit()
     return redirect(url_for('views.home'))
 
+from flask import jsonify
+
 @views.route('/post/<int:post_id>/like', methods=['POST'])
 @login_required
 def like_post(post_id):
     post = Memorie.query.get_or_404(post_id)
     like = Like.query.filter_by(user_id=current_user.id, post_id=post.id).first()
+    
     if like:
-        return redirect(url_for('views.home'))
-    new_like = Like(user_id=current_user.id, post_id=post.id)
-    db.session.add(new_like)
-    db.session.commit()
-    return redirect(url_for('views.home'))
+        # If the user has already liked the post, remove the like
+        db.session.delete(like)
+        db.session.commit()
+        return jsonify({'status': 'unliked', 'like_count': len(post.likes)})
+    else:
+        # If the user has not liked the post, add the like
+        new_like = Like(user_id=current_user.id, post_id=post.id)
+        db.session.add(new_like)
+        db.session.commit()
+        return jsonify({'status': 'liked', 'like_count': len(post.likes)})
