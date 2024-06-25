@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from .models import Memorie, Comment, User, Like
 from . import db
@@ -23,7 +23,7 @@ def add_post():
     new_post = Memorie(data=content, user_id=current_user.id)
     db.session.add(new_post)
     db.session.commit()
-    return redirect(url_for('views.home'))
+    return redirect(url_for('views.main'))
 
 @views.route('/post/<int:post_id>/comment', methods=['POST'])
 @login_required
@@ -35,8 +35,6 @@ def add_comment(post_id):
     db.session.commit()
     return redirect(url_for('views.home'))
 
-from flask import jsonify
-
 @views.route('/post/<int:post_id>/like', methods=['POST'])
 @login_required
 def like_post(post_id):
@@ -44,13 +42,17 @@ def like_post(post_id):
     like = Like.query.filter_by(user_id=current_user.id, post_id=post.id).first()
     
     if like:
-        # If the user has already liked the post, remove the like
         db.session.delete(like)
         db.session.commit()
-        return jsonify({'status': 'unliked', 'like_count': len(post.likes)})
+        status = 'unliked'
     else:
-        # If the user has not liked the post, add the like
         new_like = Like(user_id=current_user.id, post_id=post.id)
         db.session.add(new_like)
         db.session.commit()
-        return jsonify({'status': 'liked', 'like_count': len(post.likes)})
+        status = 'liked'
+    
+    # Refresh the likes relationship to get the current count
+    post = Memorie.query.get_or_404(post_id)
+    like_count = len(post.likes)
+    
+    return jsonify({'status': status, 'like_count': like_count})
